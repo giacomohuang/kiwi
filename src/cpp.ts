@@ -10,6 +10,7 @@ function cppType(definitions: { [name: string]: Definition }, field: Field, isAr
     case 'int': type = 'int32_t'; break;
     case 'uint': type = 'uint32_t'; break;
     case 'float': type = 'float'; break;
+    case 'double': type = 'double'; break;
     case 'string': type = 'kiwi::String'; break;
     case 'int64': type = 'int64_t'; break;
     case 'uint64': type = 'uint64_t'; break;
@@ -211,7 +212,7 @@ export function compileSchemaCPP(schema: Schema): string {
         cpp.push('  uint32_t _flags[' + (fields.length + 31 >> 5) + '] = {};');
 
         // Sort fields by size since that makes the resulting struct smaller
-        let sizes: { [type: string]: number } = { 'bool': 1, 'byte': 1, 'int': 4, 'uint': 4, 'float': 4 };
+        let sizes: { [type: string]: number } = { 'bool': 1, 'byte': 1, 'int': 4, 'uint': 4, 'float': 4, 'double': 8 };
         let sortedFields = fields.slice().sort(function (a, b) {
           let sizeA = !a.isArray && sizes[a.type!] || 8;
           let sizeB = !b.isArray && sizes[b.type!] || 8;
@@ -345,6 +346,11 @@ export function compileSchemaCPP(schema: Schema): string {
               break;
             }
 
+            case 'double': {
+              code = '_bb.writeVarDouble(' + value + ');';
+              break;
+            }
+
             case 'string': {
               code = '_bb.writeString(' + value + '.c_str());';
               break;
@@ -457,6 +463,11 @@ export function compileSchemaCPP(schema: Schema): string {
 
             case 'float': {
               code = '_bb.readVarFloat(' + value + ')';
+              break;
+            }
+
+            case 'double': {
+              code = '_bb.readVarDouble(' + value + ')';
               break;
             }
 

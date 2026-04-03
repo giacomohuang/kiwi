@@ -4,6 +4,7 @@ import { error, quote } from "./util";
 export let nativeTypes = [
   'bool',
   'byte',
+  'double',
   'float',
   'int',
   'int64',

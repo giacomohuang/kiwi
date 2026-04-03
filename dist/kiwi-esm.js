@@ -1,6 +1,8 @@
 // bb.ts
 var int32 = new Int32Array(1);
 var float32 = new Float32Array(int32.buffer);
+var float64 = new Float64Array(1);
+var uint64 = new BigUint64Array(float64.buffer);
 var ByteBuffer = class {
   constructor(data) {
     if (data && !(data instanceof Uint8Array)) {
@@ -51,6 +53,21 @@ var ByteBuffer = class {
     bits = bits << 23 | bits >>> 9;
     int32[0] = bits;
     return float32[0];
+  }
+  readVarDouble() {
+    let index = this._index;
+    let data = this._data;
+    let length = data.length;
+    if (index + 8 > length) {
+      throw new Error("Index out of bounds");
+    }
+    let bits = 0n;
+    for (let i = 0; i < 8; i++) {
+      bits |= BigInt(data[index + i]) << BigInt(i) * 8n;
+    }
+    this._index = index + 8;
+    uint64[0] = bits;
+    return float64[0];
   }
   readVarUint() {
     let value = 0;
@@ -152,6 +169,17 @@ var ByteBuffer = class {
     data[index + 1] = bits >> 8;
     data[index + 2] = bits >> 16;
     data[index + 3] = bits >> 24;
+  }
+  writeVarDouble(value) {
+    let index = this.length;
+    float64[0] = value;
+    let bits = uint64[0];
+    this._growBy(8);
+    let data = this._data;
+    for (let i = 0; i < 8; i++) {
+      data[index + i] = Number(bits & 255n);
+      bits >>= 8n;
+    }
   }
   writeVarUint(value) {
     if (value < 0 || value > 4294967295)
@@ -279,6 +307,10 @@ function compileDecode(definition, definitions) {
         code = "bb.readVarFloat()";
         break;
       }
+      case "double": {
+        code = "bb.readVarDouble()";
+        break;
+      }
       case "string": {
         code = "bb.readString()";
         break;
@@ -375,6 +407,10 @@ function compileEncode(definition, definitions) {
       }
       case "float": {
         code = "bb.writeVarFloat(value);";
+        break;
+      }
+      case "double": {
+        code = "bb.writeVarDouble(value);";
         break;
       }
       case "string": {
@@ -500,6 +536,8 @@ function argumentForField(definitions, type, name) {
       return { type: "uint32_t ", name };
     case "float":
       return { type: "float ", name };
+    case "double":
+      return { type: "double ", name };
     case "string":
       return { type: "const char *", name };
     case "int64":
@@ -556,6 +594,8 @@ function argToNotRead(arg) {
       return "!bb.readVarUint(" + arg.name + ")";
     case "float ":
       return "!bb.readVarFloat(" + arg.name + ")";
+    case "double ":
+      return "!bb.readVarDouble(" + arg.name + ")";
     case "const char *":
       return "!bb.readString(" + arg.name + ")";
     case "int64_t ":
@@ -577,6 +617,8 @@ function argToWrite(arg) {
       return "_bb.writeVarUint(" + arg.name + ")";
     case "float ":
       return "_bb.writeVarFloat(" + arg.name + ")";
+    case "double ":
+      return "_bb.writeVarDouble(" + arg.name + ")";
     case "const char *":
       return "_bb.writeString(" + arg.name + ")";
     case "int64_t ":
@@ -851,6 +893,9 @@ function cppType(definitions, field, isArray) {
     case "float":
       type = "float";
       break;
+    case "double":
+      type = "double";
+      break;
     case "string":
       type = "kiwi::String";
       break;
@@ -1006,7 +1051,7 @@ function compileSchemaCPP(schema) {
         cpp.push("");
         cpp.push("private:");
         cpp.push("  uint32_t _flags[" + (fields.length + 31 >> 5) + "] = {};");
-        let sizes = { "bool": 1, "byte": 1, "int": 4, "uint": 4, "float": 4 };
+        let sizes = { "bool": 1, "byte": 1, "int": 4, "uint": 4, "float": 4, "double": 8 };
         let sortedFields = fields.slice().sort(function(a, b) {
           let sizeA = !a.isArray && sizes[a.type] || 8;
           let sizeB = !b.isArray && sizes[b.type] || 8;
@@ -1112,6 +1157,10 @@ function compileSchemaCPP(schema) {
               code = "_bb.writeVarFloat(" + value + ");";
               break;
             }
+            case "double": {
+              code = "_bb.writeVarDouble(" + value + ");";
+              break;
+            }
             case "string": {
               code = "_bb.writeString(" + value + ".c_str());";
               break;
@@ -1201,6 +1250,10 @@ function compileSchemaCPP(schema) {
             }
             case "float": {
               code = "_bb.readVarFloat(" + value + ")";
+              break;
+            }
+            case "double": {
+              code = "_bb.readVarDouble(" + value + ")";
               break;
             }
             case "string": {
@@ -1307,6 +1360,7 @@ function skewDefaultValueForField(definitions, field) {
     case "uint":
       return "0";
     case "float":
+    case "double":
       return "0.0";
     case "string":
       return "null";
@@ -1335,6 +1389,7 @@ function skewTypeForField(field) {
       type = "int";
       break;
     case "float":
+    case "double":
       type = "double";
       break;
     case "string":
@@ -1497,6 +1552,10 @@ function compileSchemaSkew(schema) {
               code = "bb.writeVarFloat(" + value + ")";
               break;
             }
+            case "double": {
+              code = "bb.writeVarDouble(" + value + ")";
+              break;
+            }
             case "string": {
               code = "bb.writeString(" + value + ")";
               break;
@@ -1607,6 +1666,10 @@ function compileSchemaSkew(schema) {
             }
             case "float": {
               code = "bb.readVarFloat";
+              break;
+            }
+            case "double": {
+              code = "bb.readVarDouble";
               break;
             }
             case "string": {
@@ -1730,6 +1793,7 @@ function compileSchemaSkewTypes(schema) {
             type = "int";
             break;
           case "float":
+          case "double":
             type = "double";
             break;
           case "int64":
@@ -1817,6 +1881,7 @@ function compileSchemaTypeScript(schema) {
           case "int":
           case "uint":
           case "float":
+          case "double":
             type = "number";
             break;
           case "int64":
@@ -1858,7 +1923,7 @@ function compileSchemaTypeScript(schema) {
 }
 
 // binary.ts
-var types = ["bool", "byte", "int", "uint", "float", "string", "int64", "uint64"];
+var types = ["bool", "byte", "int", "uint", "float", "string", "int64", "uint64", "double"];
 var kinds = ["ENUM", "STRUCT", "MESSAGE"];
 function decodeBinarySchema(buffer) {
   let bb = buffer instanceof ByteBuffer ? buffer : new ByteBuffer(buffer);
@@ -1944,6 +2009,7 @@ function encodeBinarySchema(schema) {
 var nativeTypes = [
   "bool",
   "byte",
+  "double",
   "float",
   "int",
   "int64",

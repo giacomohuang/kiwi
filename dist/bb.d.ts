@@ -7,6 +7,7 @@ export declare class ByteBuffer {
     readByte(): number;
     readByteArray(): Uint8Array;
     readVarFloat(): number;
+    readVarDouble(): number;
     readVarUint(): number;
     readVarInt(): number;
     readVarUint64(): bigint;
@@ -16,6 +17,7 @@ export declare class ByteBuffer {
     writeByte(value: number): void;
     writeByteArray(value: Uint8Array): void;
     writeVarFloat(value: number): void;
+    writeVarDouble(value: number): void;
     writeVarUint(value: number): void;
     writeVarInt(value: number): void;
     writeVarUint64(value: bigint | string): void;

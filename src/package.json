@@ -10,11 +10,11 @@
     "kiwic": "cli.js"
   },
   "scripts": {
-    "build:cjs": "esbuild --target=es2020 --bundle cli.ts kiwi.ts --platform=node --outdir=./dist",
-    "build:esm": "esbuild --target=es2020 --bundle kiwi.ts --platform=node --format=esm --outfile=./dist/kiwi-esm.js",
-    "build:browser": "esbuild --target=es2020 --bundle browser.ts --platform=browser --global-name=kiwi --outfile=./dist/browser.js --minify",
-    "typedefs": "tsc --declaration --outDir ./dist --emitDeclarationOnly && ls *.ts | grep -v d.ts > .npmignore && echo tsconfig.json >> .npmignore",
-    "prepublishOnly": "rm -rf ./dist && npm run build:cjs && npm run build:esm && npm run build:browser && npm run typedefs"
+    "build:cjs": "esbuild --target=es2020 --bundle cli.ts kiwi.ts --platform=node --outdir=../dist",
+    "build:esm": "esbuild --target=es2020 --bundle kiwi.ts --platform=node --format=esm --outfile=../dist/kiwi-esm.js",
+    "build:browser": "esbuild --target=es2020 --bundle browser.ts --platform=browser --global-name=kiwi --outfile=../dist/browser.js --minify",
+    "typedefs": "tsc --declaration --outDir ../dist --emitDeclarationOnly && ls *.ts | grep -v d.ts > .npmignore && echo tsconfig.json >> .npmignore",
+    "prepublishOnly": "rm -rf ../dist && npm run build:cjs && npm run build:esm && npm run build:browser && npm run typedefs"
   },
   "repository": {
     "type": "git",

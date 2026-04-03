@@ -1,5 +1,7 @@
 let int32 = new Int32Array(1);
 let float32 = new Float32Array(int32.buffer);
+let float64 = new Float64Array(1);
+let uint64 = new BigUint64Array(float64.buffer);
 
 export class ByteBuffer {
   private _data: Uint8Array;
@@ -68,6 +70,26 @@ export class ByteBuffer {
     // Reinterpret as a floating-point number
     int32[0] = bits;
     return float32[0];
+  }
+
+  readVarDouble(): number {
+    let index = this._index;
+    let data = this._data;
+    let length = data.length;
+
+    // Endian-independent 64-bit read
+    if (index + 8 > length) {
+      throw new Error('Index out of bounds');
+    }
+    let bits = 0n;
+    for (let i = 0; i < 8; i++) {
+      bits |= BigInt(data[index + i]) << (BigInt(i) * 8n);
+    }
+    this._index = index + 8;
+
+    // Reinterpret as a 64-bit floating-point number
+    uint64[0] = bits;
+    return float64[0];
   }
 
   readVarUint(): number {
@@ -194,6 +216,22 @@ export class ByteBuffer {
     data[index + 1] = bits >> 8;
     data[index + 2] = bits >> 16;
     data[index + 3] = bits >> 24;
+  }
+
+  writeVarDouble(value: number): void {
+    let index = this.length;
+
+    // Reinterpret as an integer
+    float64[0] = value;
+    let bits = uint64[0];
+
+    // Endian-independent 64-bit write
+    this._growBy(8);
+    let data = this._data;
+    for (let i = 0; i < 8; i++) {
+      data[index + i] = Number(bits & 255n);
+      bits >>= 8n;
+    }
   }
 
   writeVarUint(value: number): void {

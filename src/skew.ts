@@ -17,7 +17,8 @@ function skewDefaultValueForField(definitions: { [name: string]: Definition }, f
     case 'byte':
     case 'int':
     case 'uint': return '0';
-    case 'float': return '0.0';
+    case 'float':
+    case 'double': return '0.0';
     case 'string': return 'null';
     case 'int64':
     case 'uint64': return 'BigInt.new(0)';
@@ -43,7 +44,8 @@ function skewTypeForField(field: Field): string | null {
     case 'byte':
     case 'int':
     case 'uint': type = 'int'; break;
-    case 'float': type = 'double'; break;
+    case 'float':
+    case 'double': type = 'double'; break;
     case 'string': type = 'string'; break;
     case 'int64':
     case 'uint64': type = 'BigInt'; break;
@@ -238,6 +240,11 @@ export function compileSchemaSkew(schema: Schema): string {
               break;
             }
 
+            case 'double': {
+              code = 'bb.writeVarDouble(' + value + ')';
+              break;
+            }
+
             case 'string': {
               code = 'bb.writeString(' + value + ')';
               break;
@@ -371,6 +378,11 @@ export function compileSchemaSkew(schema: Schema): string {
 
             case 'float': {
               code = 'bb.readVarFloat';
+              break;
+            }
+
+            case 'double': {
+              code = 'bb.readVarDouble';
               break;
             }
 

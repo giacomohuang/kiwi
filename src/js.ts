@@ -52,6 +52,11 @@ function compileDecode(definition: Definition, definitions: { [name: string]: De
         break;
       }
 
+      case 'double': {
+        code = 'bb.readVarDouble()';
+        break;
+      }
+
       case 'string': {
         code = 'bb.readString()';
         break;
@@ -170,6 +175,11 @@ function compileEncode(definition: Definition, definitions: { [name: string]: De
 
       case 'float': {
         code = 'bb.writeVarFloat(value);';
+        break;
+      }
+
+      case 'double': {
+        code = 'bb.writeVarDouble(value);';
         break;
       }
 

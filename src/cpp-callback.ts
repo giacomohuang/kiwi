@@ -12,6 +12,7 @@ function argumentForField(definitions: { [name: string]: Definition }, type: str
     case 'int': return { type: 'int32_t ', name: name };
     case 'uint': return { type: 'uint32_t ', name: name };
     case 'float': return { type: 'float ', name: name };
+    case 'double': return { type: 'double ', name: name };
     case 'string': return { type: 'const char *', name: name };
     case 'int64': return { type: 'int64_t ', name: name };
     case 'uint64': return { type: 'uint64_t ', name: name };
@@ -70,6 +71,7 @@ function argToNotRead(arg: Argument): string {
     case 'int32_t ': return '!bb.readVarInt(' + arg.name + ')';
     case 'uint32_t ': return '!bb.readVarUint(' + arg.name + ')';
     case 'float ': return '!bb.readVarFloat(' + arg.name + ')';
+    case 'double ': return '!bb.readVarDouble(' + arg.name + ')';
     case 'const char *': return '!bb.readString(' + arg.name + ')';
     case 'int64_t ': return '!bb.readVarInt64(' + arg.name + ')';
     case 'uint64_t ': return '!bb.readVarUint64(' + arg.name + ')';
@@ -84,6 +86,7 @@ function argToWrite(arg: Argument): string {
     case 'int32_t ': return '_bb.writeVarInt(' + arg.name + ')';
     case 'uint32_t ': return '_bb.writeVarUint(' + arg.name + ')';
     case 'float ': return '_bb.writeVarFloat(' + arg.name + ')';
+    case 'double ': return '_bb.writeVarDouble(' + arg.name + ')';
     case 'const char *': return '_bb.writeString(' + arg.name + ')';
     case 'int64_t ': return '_bb.writeVarInt64(' + arg.name + ')';
     case 'uint64_t ': return '_bb.writeVarUint64(' + arg.name + ')';
