@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
-// bb.ts
+// src/bb.ts
 var int32 = new Int32Array(1);
 var float32 = new Float32Array(int32.buffer);
 var float64 = new Float64Array(1);
@@ -257,7 +257,7 @@ var ByteBuffer = class {
   }
 };
 
-// util.ts
+// src/util.ts
 function quote(text) {
   return JSON.stringify(text);
 }
@@ -268,7 +268,7 @@ function error(text, line, column) {
   throw error2;
 }
 
-// js.ts
+// src/js.ts
 function compileDecode(definition, definitions) {
   let lines = [];
   let indent = "  ";
@@ -526,7 +526,7 @@ function compileSchema(schema) {
   return result;
 }
 
-// ts.ts
+// src/ts.ts
 function compileSchemaTypeScript(schema) {
   var indent = "";
   var lines = [];
@@ -606,7 +606,7 @@ function compileSchemaTypeScript(schema) {
   return lines.join("\n");
 }
 
-// cpp.ts
+// src/cpp.ts
 function cppType(definitions, field, isArray) {
   let type;
   switch (field.type) {
@@ -1074,7 +1074,7 @@ function compileSchemaCPP(schema) {
   return cpp.join("\n");
 }
 
-// cpp-callback.ts
+// src/cpp-callback.ts
 function argumentForField(definitions, type, name) {
   switch (type) {
     case "bool":
@@ -1425,7 +1425,7 @@ function compileSchemaCallbackCPP(schema) {
   return cpp.join("\n");
 }
 
-// skew.ts
+// src/skew.ts
 function popTrailingNewline(lines) {
   if (lines[lines.length - 1] === "") {
     lines.pop();
@@ -1833,7 +1833,7 @@ function compileSchemaSkew(schema) {
   return lines.join("\n");
 }
 
-// binary.ts
+// src/binary.ts
 var types = ["bool", "byte", "int", "uint", "float", "string", "int64", "uint64", "double"];
 var kinds = ["ENUM", "STRUCT", "MESSAGE"];
 function decodeBinarySchema(buffer) {
@@ -1916,7 +1916,7 @@ function encodeBinarySchema(schema) {
   return bb.toUint8Array();
 }
 
-// printer.ts
+// src/printer.ts
 function prettyPrintSchema(schema) {
   let definitions = schema.definitions;
   let text = "";
@@ -1952,7 +1952,7 @@ function prettyPrintSchema(schema) {
   return text;
 }
 
-// parser.ts
+// src/parser.ts
 var nativeTypes = [
   "bool",
   "byte",
@@ -2180,7 +2180,7 @@ function parseSchema(text) {
   return schema;
 }
 
-// skew-types.ts
+// src/skew-types.ts
 function compileSchemaSkewTypes(schema) {
   var indent = "";
   var lines = [];
@@ -2272,7 +2272,7 @@ function compileSchemaSkewTypes(schema) {
   return lines.join("\n");
 }
 
-// cli.ts
+// src/cli.ts
 var fs = require("fs");
 var usage = `
 Usage: kiwic [OPTIONS]
